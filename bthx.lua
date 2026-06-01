@@ -105,3 +105,14 @@ function getFloat(id)
         end
     end
 end
+
+function joinWorldWithDoorId(world, id)
+	while true do
+		Sleeps(100, 300)
+		SendPacket(3, "action|join_request\nname|" .. world .. "|" .. id)
+		Sleeps(4500, 5000)
+		if GetWorld().name ~= nil then
+			break
+		end
+	end
+end
