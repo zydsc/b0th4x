@@ -58,3 +58,23 @@ function paths(targetX, targetY)
         Sleep(100)
     end
 end
+
+function inventory(b)
+    local invs = GetInventory()
+    if not invs then return end
+    for _, a in pairs(invs) do
+        if a.id == b then return a.amount end
+    end
+    return 0
+end
+
+function collect()
+	local object = GetObjectList()
+    if not object then return end
+    for _, obj in pairs(object) do
+        if math.abs(GetLocal().pos.x - obj.pos.x) < 64 and math.abs(GetLocal().pos.y - obj.pos.y) < 64 then
+            SendPacketRaw(false, {x = obj.pos.x, y = obj.pos.y, value = obj.oid, type = 11})
+            Sleep(50)
+        end
+    end
+end 
