@@ -102,7 +102,7 @@ function getFloat(id)
         if object.id == id then
             paths(object.pos.x / 32, object.pos.y / 32)
             collect(id)
-            Sleep(300)
+            Sleeps(300, 500)
             if inventory(id) >= 200 or scanObject(id) == 0 then
                 break
             end
