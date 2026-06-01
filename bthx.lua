@@ -2,6 +2,14 @@ function disconnect()
     return GetWorld() == nil or GetLocal() == nil
 end
 
+function getBotTile()
+    local me = GetLocal()
+    if not me then return end
+    local x = math.floor(me.pos.x / 32)
+    local y = math.floor(me.pos.y / 32)
+    return x, y
+end
+
 function paths(targetX, targetY)
     local player = GetLocal()
     if not player then return end
@@ -143,7 +151,8 @@ end
 function joinWorldWithDoorId(world, id)
     while true do
         Sleeps(100, 300)
-        SendPacket(3,
+        SendPacket(
+            3,
             "action|join_request\nname|" ..
             world .. "|" .. id
         )
@@ -153,7 +162,14 @@ function joinWorldWithDoorId(world, id)
            currentWorld.name and
            currentWorld.name:upper() == world:upper()
         then
-            return true
+            local x, y = getBotTile()
+            if x and y then
+                local tile = GetTile(x, y)
+
+                if tile and tile.fg ~= 6 then
+                    return true
+                end
+            end
         end
     end
 end
