@@ -1,3 +1,7 @@
+function disconnect()
+    return GetWorld() == nil or GetLocal() == nil
+end
+
 function paths(targetX, targetY)
     local player = GetLocal()
     if not player then return end
@@ -21,6 +25,9 @@ function paths(targetX, targetY)
 
     -- BFS
     while #queue > 0 do
+    	if disconnect() then
+        	return
+    	end
         local current = table.remove(queue, 1)
         if current.x == targetX and current.y == targetY then
             break
@@ -54,6 +61,9 @@ function paths(targetX, targetY)
 
     -- Jalanin path
     for _, pos in ipairs(path) do
+    	if disconnect() then
+        	return
+    	end
         FindPath(pos.x, pos.y)
         Sleep(100)
     end
@@ -64,9 +74,11 @@ function Sleeps(min, max)
 end
 
 function scanObject(id)
-	local object = GetObjectList()
-    if not object then return end
-    count = 0
+    local object = GetObjectList()
+    if not object then
+        return 0
+    end
+    local count = 0
     for _, object in pairs(object) do
         if object.id == id then
             count = count + object.amount
@@ -77,19 +89,31 @@ end
 
 function inventory(b)
     local invs = GetInventory()
-    if not invs then return end
+    if not invs then
+		return 0
+	end
     for _, a in pairs(invs) do
         if a.id == b then return a.amount end
     end
     return 0
 end
 
-function collect()
-	local object = GetObjectList()
-    if not object then return end
+function collect(id)
+    local object = GetObjectList()
+    local player = GetLocal()
+    if not object or not player then
+        return
+    end
     for _, obj in pairs(object) do
-        if math.abs(GetLocal().pos.x - obj.pos.x) < 64 and math.abs(GetLocal().pos.y - obj.pos.y) < 64 then
-            SendPacketRaw(false, {x = obj.pos.x, y = obj.pos.y, value = obj.oid, type = 11})
+        if obj.id == id and
+           math.abs(player.pos.x - obj.pos.x) < 64 and
+           math.abs(player.pos.y - obj.pos.y) < 64 then
+            SendPacketRaw(false, {
+                x = obj.pos.x,
+                y = obj.pos.y,
+                value = obj.oid,
+                type = 11
+            })
             Sleep(50)
         end
     end
@@ -97,10 +121,16 @@ end
 
 function getFloat(id)
     local objectList = GetObjectList()
-    if not objectList then return end  
+    if not objectList then return end
     for _, object in pairs(objectList) do
+        if disconnect() then
+            return
+        end
         if object.id == id then
-            paths(object.pos.x / 32, object.pos.y / 32)
+            paths(
+                math.floor(object.pos.x / 32),
+                math.floor(object.pos.y / 32)
+            )
             collect(id)
             Sleeps(300, 500)
             if inventory(id) >= 200 or scanObject(id) == 0 then
