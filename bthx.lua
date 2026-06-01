@@ -59,6 +59,18 @@ function paths(targetX, targetY)
     end
 end
 
+function scanObject(id)
+	local object = GetObjectList()
+    if not object then return end
+    count = 0
+    for _, object in pairs(object) do
+        if object.id == id then
+            count = count + object.amount
+        end
+    end
+    return count
+end
+
 function inventory(b)
     local invs = GetInventory()
     if not invs then return end
@@ -77,4 +89,19 @@ function collect()
             Sleep(50)
         end
     end
-end 
+end
+
+function getFloat(id)
+    local objectList = GetObjectList()
+    if not objectList then return end  
+    for _, object in pairs(objectList) do
+        if object.id == id then
+            paths(object.pos.x / 32, object.pos.y / 32)
+            collect(id)
+            Sleep(300)
+            if inventory(id) >= 200 or scanObject(id) == 0 then
+                break
+            end
+        end
+    end
+end
