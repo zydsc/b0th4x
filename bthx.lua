@@ -59,6 +59,10 @@ function paths(targetX, targetY)
     end
 end
 
+function Sleeps(min, max)
+    return Sleep(math.random(min, max))
+end
+
 function scanObject(id)
 	local object = GetObjectList()
     if not object then return end
