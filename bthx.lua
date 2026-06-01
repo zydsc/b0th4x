@@ -148,28 +148,47 @@ function getFloat(id)
     end
 end
 
+function isInsideDoor()
+    local me = GetLocal()
+    if not me then
+        return false
+    end
+    local x = math.floor(me.pos.x / 32)
+    local y = math.floor(me.pos.y / 32)
+    local tile = GetTile(x, y)
+    return tile and tile.fg ~= 6
+end
+
+function inWhiteDoor()
+    local me = GetLocal()
+    if not me then
+        return true
+    end
+    local x = math.floor(me.pos.x / 32)
+    local y = math.floor(me.pos.y / 32)
+    local tile = GetTile(x, y)
+    return not tile or tile.fg == 6
+end
+
 function joinWorldWithDoorId(world, id)
     while true do
-        Sleeps(100, 300)
+
+        local currentWorld = GetWorld()
+
+        if currentWorld and
+           currentWorld.name and
+           currentWorld.name:upper() == world:upper() and
+           not inWhiteDoor()
+        then
+            return true
+        end
+
         SendPacket(
             3,
             "action|join_request\nname|" ..
             world .. "|" .. id
         )
-        Sleeps(4500, 5000)
-        local currentWorld = GetWorld()
-        if currentWorld and
-           currentWorld.name and
-           currentWorld.name:upper() == world:upper()
-        then
-            local x, y = getBotTile()
-            if x and y then
-                local tile = GetTile(x, y)
 
-                if tile and tile.fg ~= 6 then
-                    return true
-                end
-            end
-        end
+        Sleeps(4500, 5000)
     end
 end
