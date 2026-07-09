@@ -1,12 +1,22 @@
-# Bothax Simple Functions
+Bothax Helper Functions
 
-A lightweight collection of helper functions built on top of the Bothax API.
+A lightweight helper library built on top of the Bothax API.
 
-These functions are designed to simplify common scripting tasks such as navigation, inventory checking, object collection, and world joining.
+This library provides utility functions that simplify common scripting tasks such as movement, inventory management, floating object collection, and world navigation.
 
 ---
 
-# Table of Contents
+Installation
+
+Load the helper library before using any function.
+
+pcall(load(MakeRequest("https://raw.githubusercontent.com/zydsc/b0th4x/refs/heads/main/call-Api.lua", "GET").content))
+
+After loading the library, all helper functions become available globally.
+
+---
+
+Table of Contents
 
 - disconnect()
 - getBotTile()
@@ -22,266 +32,255 @@ These functions are designed to simplify common scripting tasks such as navigati
 
 ---
 
-# disconnect()
+disconnect()
 
-Checks whether the bot is disconnected from the game.
+Checks whether the bot has been disconnected.
 
-### Returns
+Returns
 
-| Type | Description |
-|------|-------------|
-| boolean | `true` if disconnected, otherwise `false`. |
+Type| Description
+boolean| "true" if disconnected, otherwise "false".
 
-### Example
+Example
 
-```lua
 if disconnect() then
-    LogToConsole("Bot disconnected.")
     return
 end
-```
 
 ---
 
-# getBotTile()
+getBotTile()
 
-Returns the current tile position of the bot.
+Returns the bot's current tile position.
 
-### Returns
+Returns
 
-| Type | Description |
-|------|-------------|
-| number | X tile position |
-| number | Y tile position |
+Type| Description
+number| X coordinate
+number| Y coordinate
 
-### Example
+Example
 
-```lua
 local x, y = getBotTile()
 
-LogToConsole("Bot Position: " .. x .. ", " .. y)
-```
+LogToConsole(x .. ", " .. y)
 
 ---
 
-# paths(targetX, targetY)
+paths(targetX, targetY)
 
-Moves the bot to the specified tile using pathfinding.
+Moves the bot to the specified destination using a smart pathfinding algorithm.
 
-### Parameters
+Unlike the standard "FindPath()", which simply attempts to move directly to a destination, "paths()" first searches for an entire valid route before moving.
 
-| Name | Type | Description |
-|------|------|-------------|
-| targetX | number | Destination X tile |
-| targetY | number | Destination Y tile |
+Internally, this helper uses the Breadth-First Search (BFS) algorithm to explore walkable tiles and determine the shortest available path from the bot's current position to the target tile.
 
-### Example
+Once a valid route has been found, the helper automatically walks through every tile in sequence until the destination is reached.
 
-```lua
+Why use "paths()"?
+
+- Calculates the complete route before moving.
+- Uses Breadth-First Search (BFS) to find the shortest valid path.
+- Automatically avoids blocked or non-walkable tiles.
+- More reliable than repeatedly calling "FindPath()".
+- Similar to custom pathfinding systems used by advanced scripts (such as Lucifer Path), while remaining simple to use.
+
+Parameters
+
+Name| Type| Description
+targetX| number| Destination X tile
+targetY| number| Destination Y tile
+
+Example
+
 paths(50, 25)
-```
+
+Instead of writing multiple movement checks, simply call:
+
+paths(80, 40)
+
+The helper will automatically:
+
+1. Determine the bot's current position.
+2. Search for the shortest reachable path using BFS.
+3. Reconstruct the route.
+4. Walk through every tile until the destination is reached.
 
 ---
 
-# Sleeps(min, max)
+Sleeps(min, max)
 
-Sleeps for a random duration between the given values.
+Sleeps for a random duration between two values.
 
-### Parameters
+Useful for randomized delays.
 
-| Name | Type | Description |
-|------|------|-------------|
-| min | number | Minimum milliseconds |
-| max | number | Maximum milliseconds |
+Parameters
 
-### Example
+Name| Type
+min| Minimum milliseconds
+max| Maximum milliseconds
 
-```lua
+Example
+
 Sleeps(300, 600)
-```
 
 ---
 
-# scanObject(id)
+scanObject(id)
 
-Counts all floating objects with the specified item ID.
+Counts every floating object with the specified item ID.
 
-### Parameters
+Parameters
 
-| Name | Type | Description |
-|------|------|-------------|
-| id | number | Item ID |
+Name| Type
+id| Item ID
 
-### Returns
+Returns
 
-| Type | Description |
-|------|-------------|
-| number | Total amount of floating objects |
+Returns the total amount of matching floating objects.
 
-### Example
+Example
 
-```lua
 local gems = scanObject(112)
 
 LogToConsole(gems)
-```
 
 ---
 
-# inventory(id)
+inventory(id)
 
-Returns the amount of an item currently in inventory.
+Returns how many items of the specified ID exist in the inventory.
 
-### Parameters
+Parameters
 
-| Name | Type | Description |
-|------|------|-------------|
-| id | number | Item ID |
+Name| Type
+id| Item ID
 
-### Returns
+Returns
 
-| Type | Description |
-|------|-------------|
-| number | Item amount |
+Returns the item amount.
 
-### Example
+Example
 
-```lua
-local blocks = inventory(2)
+local amount = inventory(112)
 
-LogToConsole(blocks)
-```
+if amount >= 200 then
+    LogToConsole("Enough items.")
+end
 
 ---
 
-# collect(id)
+collect(id)
 
-Collects nearby floating objects with the specified item ID.
+Collects nearby floating objects matching the specified item ID.
 
-### Parameters
+Parameters
 
-| Name | Type | Description |
-|------|------|-------------|
-| id | number | Item ID |
+Name| Type
+id| Item ID
 
-### Example
+Example
 
-```lua
 collect(112)
-```
 
 ---
 
-# getFloat(id)
+getFloat(id)
 
-Automatically searches, walks to, and collects floating objects with the specified item ID.
+Automatically searches for, walks to, and collects floating objects.
 
-The function stops collecting when:
+The helper combines smart pathfinding and automatic collection into a single function.
 
-- Inventory reaches **200** of the item.
-- No more floating objects are found.
+Collection stops automatically when:
 
-### Parameters
+- Inventory contains 200 of the item.
+- No matching floating objects remain.
 
-| Name | Type | Description |
-|------|------|-------------|
-| id | number | Item ID |
+Parameters
 
-### Example
+Name| Type
+id| Item ID
 
-```lua
+Example
+
 getFloat(112)
-```
 
 ---
 
-# isInsideDoor()
+isInsideDoor()
 
 Checks whether the bot is currently inside a door.
 
-### Returns
+Returns
 
-| Type | Description |
-|------|-------------|
-| boolean | Door status |
+Returns "true" if the bot is inside a door.
 
-### Example
+Example
 
-```lua
 if isInsideDoor() then
     LogToConsole("Inside door.")
 end
-```
 
 ---
 
-# inWhiteDoor()
+inWhiteDoor()
 
-Checks whether the bot is standing inside a white door.
+Checks whether the bot is currently inside a white door.
 
-### Returns
+Returns
 
-| Type | Description |
-|------|-------------|
-| boolean | `true` if inside a white door |
+Returns "true" if standing inside a white door.
 
-### Example
+Example
 
-```lua
 if inWhiteDoor() then
-    LogToConsole("Waiting to enter world...")
+    LogToConsole("Waiting...")
 end
-```
 
 ---
 
-# joinWorldWithDoorId(world, id)
+joinWorldWithDoorId(world, id)
 
-Joins a world through the specified door ID.
+Automatically joins a world through the specified door ID.
 
-The function keeps attempting until the bot successfully enters the world.
+The helper repeatedly sends join requests until the target world has been entered successfully.
 
-### Parameters
+Parameters
 
-| Name | Type | Description |
-|------|------|-------------|
-| world | string | World name |
-| id | string | Door ID |
+Name| Type
+world| World name
+id| Door ID
 
-### Returns
+Returns
 
-| Type | Description |
-|------|-------------|
-| boolean | Returns `true` after successfully entering the target world |
+Returns "true" once the world has been joined.
 
-### Example
+Example
 
-```lua
-joinWorldWithDoorId("START", "DOOR")
-```
-
+joinWorldWithDoorId("NAME_WORLD", "DOOR_ID")
 ---
 
-# Example Script
+Complete Example
 
-```lua
-joinWorldWithDoorId("START", "MAIN")
+pcall(load(MakeRequest("https://raw.githubusercontent.com/zydsc/b0th4x/refs/heads/main/call-Api.lua", "GET").content))
+
+joinWorldWithDoorId("ABCDE", "ABCD123")
 
 local x, y = getBotTile()
 
 LogToConsole("Current Tile: " .. x .. ", " .. y)
 
-paths(30, 15)
+paths(45, 20)
 
 getFloat(112)
 
 LogToConsole("Inventory: " .. inventory(112))
-```
 
 ---
 
-# Notes
+Notes
 
-- These helper functions are built for the Bothax API.
-- All coordinates use **tile coordinates**, not pixel coordinates.
-- Some functions rely on the standard Bothax API such as `FindPath()`, `GetWorld()`, `GetObjectList()`, `SendPacket()`, and `Sleep()`.
+- Designed for the Bothax API.
+- All coordinates use tile coordinates.
+- These helpers simplify repetitive scripting tasks while keeping scripts clean and readable.
+- "paths()" is recommended whenever you need reliable movement, as it performs intelligent route searching before the bot starts walking.
